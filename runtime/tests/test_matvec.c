@@ -3,9 +3,10 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "ops.h"
 
 static void assert_close(float actual, float expected, float tolerance) {
-    assert(fabs(actual - expected) <= tolerance);
+    assert(fabsf(actual - expected) <= tolerance);
 }
 
 int main(void) {
@@ -23,13 +24,14 @@ int main(void) {
     float output[2] = {0.0f, 0.0f};
 
     // actual function call
-    for (size_t row = 0; row < rows; row++) {
-        float sum = 0.0f;
-        for(size_t column = 0; column< columns; column++) {
-            sum += weights[row*columns + column] + input[column]; 
-        }
-        output[row] = sum;
-    }
+    // for (size_t row = 0; row < rows; row++) {
+    //     float sum = 0.0f;
+    //     for(size_t column = 0; column< columns; column++) {
+    //         sum += weights[row*columns + column] * input[column];
+    //     }
+    //     output[row] = sum;
+    // }
+    matvec(weights, input, output, rows, columns);
     
     const float tolerance = 1e-6f;
 
