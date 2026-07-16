@@ -20,5 +20,10 @@ int rmsnorm(
         size_t rows
 );
 
+int softmax(
+        const float* input, 
+        float *output, 
+        size_t length
+);
 
 #endif /* OPS_H */
