@@ -29,11 +29,11 @@ static void run_case(const float *weights,
 
 int main(void)
 {
-    /* RMSNorm([3, 4], [1, 2], 0): [3/sqrt(12.5), 8/sqrt(12.5)]. */
+    /* RMSNorm([3, 4], [1, 2], 1e-5). */
     const float weights[] = {1.0f, 2.0f};
     const float input[] = {3.0f, 4.0f};
-    const float expected[] = {0.84852814f, 2.26274170f};
-    run_case(weights, input, expected, 2, 0.0f);
+    const float expected[] = {0.84852778f, 2.26274075f};
+    run_case(weights, input, expected, 2, 1e-5f);
 
     /* Epsilon changes the denominator and prevents division by zero. */
     const float zero_input[] = {0.0f, 0.0f, 0.0f};
