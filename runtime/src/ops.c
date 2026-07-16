@@ -36,7 +36,7 @@ int softmax(const float* input, float *output, size_t length) {
     // validating input
     if(input == NULL || output == NULL || length == 0) return -1;
     // finding the maximum of input values to exponential becomes safe 
-    float maxInput = -1e9f;
+    float maxInput = input[0];
     for(size_t i = 0; i < length; i++) {
         if(input[i] > maxInput) {
             maxInput = input[i];
@@ -45,7 +45,7 @@ int softmax(const float* input, float *output, size_t length) {
 
     float sum = 0;
     for(size_t i = 0; i < length; i++) {
-        output[i] = exp(input[i] - maxInput);
+        output[i] = expf(input[i] - maxInput);
         sum += output[i];
     }
 
