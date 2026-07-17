@@ -26,4 +26,12 @@ int softmax(
         size_t length
 );
 
+int rope(
+        float* q, 
+        float* k, 
+        size_t num_heads, 
+        size_t head_dim, 
+        size_t position, 
+        float base
+);
 #endif /* OPS_H */

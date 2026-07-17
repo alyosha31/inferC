@@ -55,3 +55,30 @@ int softmax(const float* input, float *output, size_t length) {
 
     return 0;
 }
+
+int rope(float* q, float* k, size_t num_heads, size_t head_dim, size_t position, float base) {
+    if(q == NULL || k == NULL || num_heads == 0 || head_dim == 0 || head_dim%2 || base == 0) {
+        return -1;
+    }
+
+    // since q and k are flattened, we must calculate for each head we are working with
+    for(size_t head = 0; head < num_heads; head++) {
+        size_t index = head_dim*head; // starting index
+        for(size_t i = 0; i < head_dim/2; i++) {
+            size_t ind = index + 2*i; // index of the first element in the pair
+            float theta = (float)position*powf((float)base, (-(2.0f)*(i)/((float)head_dim)));
+            float prev_first_query = q[ind];
+            float prev_second_query = q[ind+1];
+            float prev_first_key = k[ind];
+            float prev_second_key = k[ind+1];
+            float cosine = cosf(theta);
+            float sine = sinf(theta); 
+            q[ind] = prev_first_query*cosine - prev_second_query*sine;
+            q[ind+1] = prev_first_query*sine + prev_second_query*cosine;
+            k[ind] = prev_first_key*cosine - prev_second_key*sine;
+            k[ind+1] = prev_first_key*sine + prev_second_key*cosine;
+        }
+    }
+
+    return 0;
+}
