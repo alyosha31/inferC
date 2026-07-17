@@ -34,4 +34,21 @@ int rope(
         size_t position, 
         float base
 );
+
+float silu(float input);
+
+int swiglu(
+        const float* input, 
+        const float* w_gate, 
+        const float* w_up, 
+        const float* w_down, 
+        float* gate, 
+        float* up, 
+        float* output, 
+        size_t dim, 
+        size_t hidden_dim
+);
+
+
+
 #endif /* OPS_H */

@@ -82,3 +82,34 @@ int rope(float* q, float* k, size_t num_heads, size_t head_dim, size_t position,
 
     return 0;
 }
+
+float silu(float input) {
+    float sigmoid = 1.0f/(1.0f + expf(-(input)));
+    return input*sigmoid;
+}
+
+int swiglu(const float* input, const float* w_gate, const float* w_up, const float* w_down, float* gate, float* up, float* output, size_t dim, size_t hidden_dim) {
+    if(input == NULL || w_gate == NULL || w_up == NULL || w_down == NULL || gate == NULL || up == NULL || output == NULL || dim == 0 || hidden_dim == 0) {
+        return -1;
+    }
+    // hidden_dim is the expansion of the dim (input dimension)
+    // we need to scale up and then scale down in FF pass
+    // logic is: gate = w_gatexinput
+    // up = w_upxinput
+    // gated = silu(gate)(element wise multiplication)(up)
+    // output = w_downxgated [scaled down since w_down has transposed dimensions as w_up]
+
+    // gate
+    matvec(w_gate, input, gate, hidden_dim, dim);
+    // expanded feature set matrix stored in up
+    matvec(w_up, input, up, hidden_dim, dim);
+    // gated
+    // -- taking silu of each element in gate and multiplying with up(dimensions are: hidden_dimx1)
+    for(size_t i = 0; i < hidden_dim; i++) {
+        gate[i] = silu(gate[i])*up[i];
+    }
+    // scale down operation
+    matvec(w_down, gate, output, dim, hidden_dim);
+
+    return 0;
+}
