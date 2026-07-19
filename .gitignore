@@ -53,3 +53,6 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Downloaded model artifacts are reproducible local dependencies, not source.
+models/*.bin
