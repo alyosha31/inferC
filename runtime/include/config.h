@@ -20,4 +20,8 @@ typedef struct {
     int shared_classifier;
 } ModelConfig;
 
+
+
+int validate_config(ModelConfig *config);
+
 #endif /* CONFIG_H */

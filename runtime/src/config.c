@@ -22,10 +22,10 @@ int validate_config(ModelConfig *config) {
     ) {
         return -1;
     }
-    config->head_dim = dim/n_heads;
-    config->kv_dim = dim/n_kv_heads;
-    config->shared_classifier = (raw_vocab_size > 0)?1:0; // for tinystories, E == W_vocab so this should be 1
-    config->vocab_size = (size_t) abs(raw_vocab_size);
+    config->head_dim = config->dim/config->n_heads;
+    config->kv_dim = config->head_dim*config->n_kv_heads;
+    config->shared_classifier = (config->raw_vocab_size > 0)?1:0; // for tinystories, E == W_vocab so this should be 1
+    config->vocab_size = (size_t) abs(config->raw_vocab_size);
     
     return 0;
 }
