@@ -6,14 +6,69 @@
 #include "checkpoint.h"
 #include "config.h"
 
+typedef struct ModelWeights {
+    const float *token_embedding_table;
+    const float *rms_att_weight;
+    const float *wq;
+    const float *wk;
+    const float *wv;
+    const float *wo;
+    const float *rms_ffn_weight;
+    const float *w_gate;
+    const float *w_up;
+    const float *w_down;
+    const float *rms_final_weight;
+    const float *wcls; // for tinystories, this is token_embedding_table
+} ModelWeights;
 
 struct InferModel {
     ModelConfig config;
     unsigned char *data;
     size_t file_size;
+    ModelWeights weights;
+};
+
+enum {
+    TOKEN_EMBEDDING_OFFSET = 28,
+    RMS_ATT_OFFSET = 36864028,
+    WQ_OFFSET = 36870940,
+    WK_OFFSET = 38861596,
+    WV_OFFSET = 40852252,
+    WO_OFFSET = 42842908,
+    RMS_FFN_OFFSET = 44833564,
+    W_GATE_OFFSET = 44840476,
+    W_DOWN_OFFSET = 50148892,
+    W_UP_OFFSET = 55457308,
+    RMS_FINAL_OFFSET = 60765724
 };
 
 
+static InferStatus map_weights_from_data(InferModel *model) {
+    if(model == NULL) {
+        return INFER_INVALID_CHECKPOINT;
+    }
+    if(model->data == NULL) {
+        return INFER_ALLOCATION_ERROR;
+    }
+
+    ModelWeights *weights = &model->weights;
+
+    weights->token_embedding_table = (const float *)(model->data + TOKEN_EMBEDDING_OFFSET);
+    weights->rms_att_weight = (const float *)(model->data + RMS_ATT_OFFSET);
+    weights->wq = (const float *)(model->data + WQ_OFFSET);
+    weights->wk = (const float *)(model->data + WK_OFFSET);
+    weights->wv = (const float *)(model->data + WV_OFFSET);
+    weights->wo = (const float *)(model->data + WO_OFFSET);
+    weights->rms_ffn_weight = (const float *)(model->data + RMS_FFN_OFFSET);
+    weights->w_gate = (const float *)(model->data + W_GATE_OFFSET);
+    weights->w_down = (const float *)(model->data + W_DOWN_OFFSET);
+    weights->w_up = (const float *)(model->data + W_UP_OFFSET);
+    weights->rms_final_weight = (const float *)(model->data + RMS_FINAL_OFFSET);
+    weights->wcls = weights->token_embedding_table; // for tiny stories, they are same
+
+
+    return INFER_OK;
+}
 
 
 int calculate_expected_size(ModelConfig config, size_t *expected_size) {
@@ -148,10 +203,17 @@ InferStatus model_load(const char *path, InferModel **out_model) {
         fclose(file);
         return INFER_IO_ERROR;
     }
-    
-    fclose(file);
 
     // weight mapping
+    InferStatus map_weights_status = map_weights_from_data(model);
+    if(map_weights_status != INFER_OK) {
+        free(model->data);
+        free(model);
+        fclose(file);
+        return map_weights_status;
+    }
+
+    fclose(file);
     *out_model = model;
 
     return INFER_OK;
@@ -166,5 +228,4 @@ void model_destroy(InferModel *model) {
     free(model->data);
     free(model);
 }
-
 
